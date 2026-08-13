@@ -43,3 +43,18 @@ evaluation.
 Not production software. Parsing is deliberately simplified. The point is
 the structural difference between the two designs, measured with CK
 metrics and the QMOOD reusability index.
+
+## Toolchain constraint
+
+Metrics are collected with ckjm 1.9, which uses Apache BCEL 5.2 to read
+compiled bytecode. BCEL 5.2 predates the invokedynamic constant pool entry
+introduced in Java 7 and fails on any class file containing it.
+
+The project therefore targets Java 8 and compiles with Zulu 8. Java 8
+compiles string concatenation to StringBuilder rather than invokedynamic,
+which JDK 9 and later do not. Lambdas and method references produce
+invokedynamic under every Java version and are banned outright.
+
+This constraint is documented in the report's measurement guideline. It is
+a property of the instrument, not of the design being measured, and it
+applies identically to both solutions so the comparison remains valid.

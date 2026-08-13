@@ -13,14 +13,52 @@ behaviour. If a step file conflicts with a rule here, stop and ask.
 
 ## Java
 
-- Source and target: [SET AFTER SPIKE — likely `--release 11` or default 26]
-- [IF SPIKE REQUIRES] No lambdas. No method references. No streams.
-  Use anonymous inner classes and explicit loops.
-- No external libraries. No Maven, Gradle, or any dependency manager.
-  Parsing is hand-written.
-- Compile with plain `javac`.
-- Packages: `com.dpat.simple` for the simple solution,
-  `com.dpat.patterns` for the pattern-based solution.
+## Java and toolchain
+
+- Java 8. Compile and run with Zulu 8 at
+  /Library/Java/JavaVirtualMachines/zulu-8.jdk/Contents/Home
+- Do NOT use JDK 26 to compile anything in this repository.
+
+### Banned constructs
+
+These compile to invokedynamic, which the measurement tool cannot parse.
+Using any of them breaks the entire metrics run, not just one class.
+
+- No lambda expressions
+- No method references
+- No streams API
+- No var, records, text blocks, or switch expressions (not in Java 8 anyway)
+
+Use anonymous inner classes and explicit for loops instead.
+
+String concatenation with + is SAFE under Zulu 8 because Java 8 compiles it
+to StringBuilder. It is NOT safe under JDK 26, which compiles it to
+invokedynamic. This is why the compiler is pinned.
+
+### Build
+
+- No Maven. No Gradle. No dependency manager.
+- No external libraries. All parsing is hand-written.
+- Plain javac only.
+
+### Commands
+
+    ZULU8=/Library/Java/JavaVirtualMachines/zulu-8.jdk/Contents/Home
+
+    $ZULU8/bin/javac -d build/simple $(find simple-solution/src -name "*.java")
+    $ZULU8/bin/javac -d build/patterns $(find pattern-solution/src -name "*.java")
+
+    $ZULU8/bin/java -cp build/simple com.dpat.simple.Main data/products.csv
+    $ZULU8/bin/java -cp build/patterns com.dpat.patterns.Main data/products.csv
+
+### Verify before committing
+
+After adding or changing classes, confirm the metrics tool still parses them:
+
+    java -jar tools/ckjm-1.9.jar $(find build/simple -name "*.class")
+
+A ClassFormatException means a banned construct was used somewhere. Find
+it and remove it before continuing.
 
 ## The two solutions
 
