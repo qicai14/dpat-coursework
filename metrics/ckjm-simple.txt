@@ -1,0 +1,9 @@
+com.dpat.simple.JsonImporter 5 1 0 3 39 10 1 2
+com.dpat.simple.Main 2 1 0 3 25 1 0 2
+com.dpat.simple.LegacyFlatFileReader 2 1 0 0 15 1 1 2
+com.dpat.simple.ImportManager 6 1 0 7 40 15 1 2
+com.dpat.simple.CsvImporter 5 1 0 3 34 10 1 2
+com.dpat.simple.ValidationException 1 3 0 0 2 0 4 1
+com.dpat.simple.XmlImporter 5 1 0 3 36 10 1 2
+com.dpat.simple.ImportResult 7 1 0 1 11 0 5 7
+com.dpat.simple.Product 5 1 0 0 6 2 6 5

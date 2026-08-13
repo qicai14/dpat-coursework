@@ -1,0 +1,138 @@
+@startuml pattern-solution
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+hide empty members
+
+title Pattern-Based Solution — Factory Method and Adapter
+
+package "Factory Method" <<Rectangle>> {
+  abstract class ImportJob <<Creator>> {
+    +run(file: Path): ImportResult
+    #{abstract} createParser(): ProductParser
+  }
+  class CsvImportJob <<ConcreteCreator>> {
+    #createParser(): ProductParser
+  }
+  class JsonImportJob <<ConcreteCreator>> {
+    #createParser(): ProductParser
+  }
+  class XmlImportJob <<ConcreteCreator>> {
+    #createParser(): ProductParser
+  }
+  class LegacyImportJob <<ConcreteCreator>> {
+    #createParser(): ProductParser
+  }
+}
+
+package "Adapter" <<Rectangle>> {
+  interface ProductParser <<Target>> {
+    +parse(file: Path): List<Map<String,String>>
+  }
+  class LegacyFlatFileAdapter <<Adapter>> {
+    -reader: LegacyFlatFileReader
+    +LegacyFlatFileAdapter()
+    +parse(file: Path): List<Map<String,String>>
+  }
+  class LegacyFlatFileReader <<Adaptee>> {
+    +readAll(file: File): String[][]
+  }
+}
+
+class CsvParser {
+  +parse(file: Path): List<Map<String,String>>
+}
+class JsonParser {
+  +parse(file: Path): List<Map<String,String>>
+}
+class XmlParser {
+  +parse(file: Path): List<Map<String,String>>
+}
+
+class ProductMapper {
+  +map(record: Map<String,String>): Product
+  +validate(p: Product): void
+}
+
+class Main {
+  +{static} main(args: String[]): void
+  -{static} jobFor(extension: String): ImportJob
+}
+
+class Product {
+  -sku: String
+  -name: String
+  -price: double
+  -quantity: int
+  +Product(sku: String, name: String, price: double, quantity: int)
+  +getSku(): String
+  +getName(): String
+  +getPrice(): double
+  +getQuantity(): int
+}
+
+class ImportResult {
+  -products: List<Product>
+  -errors: List<String>
+  +addProduct(p: Product): void
+  +addError(message: String): void
+  +getProducts(): List<Product>
+  +getErrors(): List<String>
+  +getSuccessCount(): int
+  +getFailureCount(): int
+}
+
+class ValidationException {
+  +ValidationException(message: String)
+}
+
+ImportJob <|-- CsvImportJob
+ImportJob <|-- JsonImportJob
+ImportJob <|-- XmlImportJob
+ImportJob <|-- LegacyImportJob
+
+ProductParser <|.. CsvParser
+ProductParser <|.. JsonParser
+ProductParser <|.. XmlParser
+ProductParser <|.. LegacyFlatFileAdapter
+
+LegacyFlatFileAdapter o--> LegacyFlatFileReader
+
+ImportJob ..> ProductParser
+ImportJob --> ProductMapper
+ImportJob --> ImportResult
+ImportJob ..> ValidationException
+
+CsvImportJob ..> CsvParser
+JsonImportJob ..> JsonParser
+XmlImportJob ..> XmlParser
+LegacyImportJob ..> LegacyFlatFileAdapter
+
+ProductMapper ..> Product
+ProductMapper ..> ValidationException
+ImportResult o-- Product
+
+Main --> ImportJob
+
+note top of ImportJob
+  Holds the invariant import workflow.
+  Never names a concrete parser.
+  Adding a fifth format needs a new
+  ConcreteCreator and a new parser,
+  with no edit to this class.
+end note
+
+note bottom of LegacyFlatFileAdapter
+  Converts the positional String[][]
+  from the Adaptee into the keyed
+  records the Target declares.
+  LegacyFlatFileReader is unchanged
+  from the simple solution.
+end note
+
+note right of ProductMapper
+  The mapping and validation logic
+  that appeared four times in the
+  simple solution now appears once.
+end note
+
+@enduml
