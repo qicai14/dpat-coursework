@@ -1,6 +1,14 @@
-build/
-out/
-*.class
+# Compiled output, this project only. Leading slash anchors to repo root.
+/build/
+/out/
+
+# IntelliJ
 .idea/
 *.iml
+
+# macOS
 .DS_Store
+
+# Project class files, but keep everything under tools/
+*.class
+!tools/**
