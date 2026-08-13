@@ -1,0 +1,115 @@
+@startuml simple-solution
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+hide empty members
+
+title Simple Solution — Product Catalogue Import (no design patterns)
+
+class Main {
+  +{static} main(args: String[]): void
+}
+
+class ImportManager {
+  +importFile(file: Path): ImportResult
+  -extensionOf(file: Path): String
+  -importLegacy(file: Path): ImportResult
+  -mapLegacyRow(row: String[]): Product
+  -validate(p: Product): void
+}
+
+class CsvImporter {
+  +read(file: Path): ImportResult
+  -parseRecords(file: Path): List<Map<String,String>>
+  -mapFields(record: Map<String,String>): Product
+  -validate(p: Product): void
+}
+
+class JsonImporter {
+  +read(file: Path): ImportResult
+  -parseRecords(file: Path): List<Map<String,String>>
+  -mapFields(record: Map<String,String>): Product
+  -validate(p: Product): void
+}
+
+class XmlImporter {
+  +read(file: Path): ImportResult
+  -parseRecords(file: Path): List<Map<String,String>>
+  -mapFields(record: Map<String,String>): Product
+  -validate(p: Product): void
+}
+
+class LegacyFlatFileReader <<existing component>> {
+  +readAll(file: File): String[][]
+}
+
+class Product {
+  -sku: String
+  -name: String
+  -price: double
+  -quantity: int
+  +Product(sku: String, name: String, price: double, quantity: int)
+  +getSku(): String
+  +getName(): String
+  +getPrice(): double
+  +getQuantity(): int
+}
+
+class ImportResult {
+  -products: List<Product>
+  -errors: List<String>
+  +addProduct(p: Product): void
+  +addError(message: String): void
+  +getProducts(): List<Product>
+  +getErrors(): List<String>
+  +getSuccessCount(): int
+  +getFailureCount(): int
+}
+
+class ValidationException {
+  +ValidationException(message: String)
+}
+
+Main --> ImportManager
+
+ImportManager --> CsvImporter
+ImportManager --> JsonImporter
+ImportManager --> XmlImporter
+ImportManager --> LegacyFlatFileReader
+ImportManager --> ImportResult
+ImportManager ..> Product
+ImportManager ..> ValidationException
+
+CsvImporter --> ImportResult
+JsonImporter --> ImportResult
+XmlImporter --> ImportResult
+
+CsvImporter ..> Product
+JsonImporter ..> Product
+XmlImporter ..> Product
+
+CsvImporter ..> ValidationException
+JsonImporter ..> ValidationException
+XmlImporter ..> ValidationException
+
+ImportResult o-- Product
+
+note bottom of ImportManager
+  Selects the importer with a conditional
+  chain on file extension, naming four
+  concrete types directly. Direct class
+  coupling is 7.
+
+  Also converts legacy rows itself, so it
+  both routes files and translates one
+  supplier's format.
+end note
+
+note right of XmlImporter
+  parseRecords differs per format.
+  mapFields and validate are identical
+  across all three importers, and appear
+  a fourth time inside ImportManager for
+  the legacy path.
+end note
+
+@enduml

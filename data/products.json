@@ -1,0 +1,7 @@
+[
+  {"sku": "SKU-1001", "name": "Steel Hex Bolt M8", "price": "0.45", "quantity": "5000"},
+  {"sku": "SKU-1002", "name": "Nylon Washer 10mm", "price": "0.12", "quantity": "12000"},
+  {"sku": "SKU-1003", "name": "Cordless Drill 18V", "price": "129.99", "quantity": "45"},
+  {"sku": "SKU-1004", "name": "Safety Goggles Clear", "price": "8.75", "quantity": "300"},
+  {"sku": "SKU-1005", "name": "Measuring Tape 5m", "price": "14.50", "quantity": "180"}
+]

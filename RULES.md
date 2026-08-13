@@ -15,50 +15,85 @@ behaviour. If a step file conflicts with a rule here, stop and ask.
 
 ## Java and toolchain
 
-- Java 8. Compile and run with Zulu 8 at
-  /Library/Java/JavaVirtualMachines/zulu-8.jdk/Contents/Home
-- Do NOT use JDK 26 to compile anything in this repository.
+Java 8 only. Compile and run with Zulu 8:
+
+    /Library/Java/JavaVirtualMachines/zulu-8.jdk/Contents/Home
+
+Never compile this project with JDK 26.
+
+### Why
+
+Metrics are collected with ckjm 1.9 (build "1.9 April 4 2012"), which
+bundles Apache BCEL 5.2. BCEL 5.2 predates the invokedynamic constant pool
+entry and throws ClassFormatException on any class file containing it.
+
+Verified on this machine:
+- Plain Java 8 code parses correctly.
+- String concatenation with + parses correctly under Zulu 8, because
+  Java 8 compiles it to StringBuilder.
+- Lambda expressions fail with "Invalid byte tag in constant pool: 18"
+  under every compiler, because Java 8 implements lambdas with
+  invokedynamic.
+- JDK 9 and later compile string concatenation to invokedynamic (JEP 280),
+  which is why the compiler is pinned rather than the language level.
 
 ### Banned constructs
 
-These compile to invokedynamic, which the measurement tool cannot parse.
-Using any of them breaks the entire metrics run, not just one class.
+Any of these breaks the entire metrics run, not just one class.
 
 - No lambda expressions
 - No method references
 - No streams API
-- No var, records, text blocks, or switch expressions (not in Java 8 anyway)
 
-Use anonymous inner classes and explicit for loops instead.
+Use anonymous inner classes and explicit for loops.
 
-String concatenation with + is SAFE under Zulu 8 because Java 8 compiles it
-to StringBuilder. It is NOT safe under JDK 26, which compiles it to
-invokedynamic. This is why the compiler is pinned.
+String concatenation with + is allowed and safe under Zulu 8.
 
 ### Build
 
-- No Maven. No Gradle. No dependency manager.
+- No Maven, Gradle, or any dependency manager.
 - No external libraries. All parsing is hand-written.
 - Plain javac only.
 
 ### Commands
 
-    ZULU8=/Library/Java/JavaVirtualMachines/zulu-8.jdk/Contents/Home
+Run from the repository root. Absolute paths only, never PATH or JAVA_HOME.
 
+    ZULU8=/Library/Java/JavaVirtualMachines/zulu-8.jdk/Contents/Home
+    CKJM=tools/ckjm-1.9/build/ckjm-1.9.jar
+
+    # Zulu 8 javac does NOT create the -d directory. Always mkdir first.
+    mkdir -p build/simple build/patterns
+
+    # compile
     $ZULU8/bin/javac -d build/simple $(find simple-solution/src -name "*.java")
     $ZULU8/bin/javac -d build/patterns $(find pattern-solution/src -name "*.java")
 
+    # run
     $ZULU8/bin/java -cp build/simple com.dpat.simple.Main data/products.csv
     $ZULU8/bin/java -cp build/patterns com.dpat.patterns.Main data/products.csv
 
-### Verify before committing
+    # metrics
+    $ZULU8/bin/java -jar $CKJM $(find build/simple -name "*.class")
+    $ZULU8/bin/java -jar $CKJM $(find build/patterns -name "*.class")
 
-After adding or changing classes, confirm the metrics tool still parses them:
+### Reading ckjm errors
 
-    java -jar tools/ckjm-1.9.jar $(find build/simple -name "*.class")
+    ClassFormatException: Invalid byte tag in constant pool: 18
+        A banned construct was used somewhere. Find it and remove it.
 
-A ClassFormatException means a banned construct was used somewhere. Find
-it and remove it before continuing.
+    NullPointerException at ClassParser.parse
+        The .class file does not exist. Compilation probably failed,
+        or the path is wrong.
+
+### Verify after every batch of classes
+
+    mkdir -p build/simple
+    $ZULU8/bin/javac -d build/simple $(find simple-solution/src -name "*.java")
+    $ZULU8/bin/java -jar $CKJM $(find build/simple -name "*.class")
+
+ckjm aborts on the first unparseable class rather than skipping it, so a
+single banned construct anywhere prevents all measurement. Check early.
 
 ## The two solutions
 

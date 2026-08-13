@@ -1,0 +1,32 @@
+<products>
+  <product>
+    <sku>SKU-1001</sku>
+    <name>Steel Hex Bolt M8</name>
+    <price>0.45</price>
+    <quantity>5000</quantity>
+  </product>
+  <product>
+    <sku>SKU-1002</sku>
+    <name>Nylon Washer 10mm</name>
+    <price>0.12</price>
+    <quantity>12000</quantity>
+  </product>
+  <product>
+    <sku>SKU-1003</sku>
+    <name>Cordless Drill 18V</name>
+    <price>129.99</price>
+    <quantity>45</quantity>
+  </product>
+  <product>
+    <sku>SKU-1004</sku>
+    <name>Safety Goggles Clear</name>
+    <price>8.75</price>
+    <quantity>300</quantity>
+  </product>
+  <product>
+    <sku>SKU-1005</sku>
+    <name>Measuring Tape 5m</name>
+    <price>14.50</price>
+    <quantity>180</quantity>
+  </product>
+</products>
