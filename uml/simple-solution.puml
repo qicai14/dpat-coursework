@@ -96,8 +96,8 @@ ImportResult o-- Product
 note bottom of ImportManager
   Selects the importer with a conditional
   chain on file extension, naming four
-  concrete types directly. Direct class
-  coupling is 7.
+  concrete types directly. Coupling between
+  objects (CBO) is 7.
 
   Also converts legacy rows itself, so it
   both routes files and translates one

@@ -74,8 +74,16 @@ Run from the repository root. Absolute paths only, never PATH or JAVA_HOME.
     $ZULU8/bin/java -cp build/patterns com.dpat.patterns.Main data/products.csv
 
     # metrics
-    $ZULU8/bin/java -jar $CKJM $(find build/simple -name "*.class")
-    $ZULU8/bin/java -jar $CKJM $(find build/patterns -name "*.class")
+        # NOTE: -cp form, not -jar. ckjm resolves superclasses through the JVM
+        # classpath, so the compiled output directory must be on it. Using
+        # "java -jar" silently reports DIT 0 for any class extending a project
+        # class, because BCEL cannot find the superclass.
+    
+        $ZULU8/bin/java -cp $CKJM:build/simple gr.spinellis.ckjm.MetricsFilter \
+          $(find build/simple -name "*.class") | tee metrics/ckjm-simple.txt
+    
+        $ZULU8/bin/java -cp $CKJM:build/patterns gr.spinellis.ckjm.MetricsFilter \
+          $(find build/patterns -name "*.class") | tee metrics/ckjm-pattern.txt
 
 ### Reading ckjm errors
 
@@ -85,6 +93,10 @@ Run from the repository root. Absolute paths only, never PATH or JAVA_HOME.
     NullPointerException at ClassParser.parse
         The .class file does not exist. Compilation probably failed,
         or the path is wrong.
+
+    Error obtaining all superclasses of ...
+        The compiled output is not on the classpath. Use the -cp form.
+        Results are still printed but DIT will be wrong.
 
 ### Verify after every batch of classes
 
