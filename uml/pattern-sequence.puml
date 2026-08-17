@@ -1,0 +1,74 @@
+@startuml pattern-sequence
+skinparam sequenceMessageAlign center
+skinparam maxMessageSize 180
+
+title Import of a legacy fixed-width file through the pattern-based solution
+
+actor User
+participant "Main" as M
+participant "LegacyImportJob" as J
+participant "LegacyFlatFileAdapter" as A
+participant "LegacyFlatFileReader" as R
+participant "ProductMapper" as PM
+participant "ImportResult" as IR
+
+User -> M : main(products.txt)
+activate M
+
+M -> M : jobFor(file)
+note right of M
+  Selects the concrete creator
+  by file extension. This is the
+  only class that names a
+  concrete ImportJob.
+end note
+
+M -> J : run(file)
+activate J
+
+J -> J : createParser()
+note right of J
+  Factory method. ImportJob
+  declares it abstract and never
+  names a concrete parser.
+end note
+J --> J : LegacyFlatFileAdapter
+
+J -> IR : new ImportResult()
+J -> PM : new ProductMapper()
+
+J -> A : parse(file)
+activate A
+A -> R : readAll(file)
+activate R
+R --> A : String[][]
+deactivate R
+note right of A
+  Adapter translates positional
+  rows into the keyed records
+  the ProductParser interface
+  declares.
+end note
+A --> J : List<Map<String,String>>
+deactivate A
+
+loop for each record
+  J -> PM : map(record)
+  PM --> J : Product
+  J -> PM : validate(product)
+  alt valid
+    J -> IR : addProduct(product)
+  else ValidationException
+    J -> IR : addError(message)
+  end
+end
+
+J --> M : ImportResult
+deactivate J
+
+M -> IR : getSuccessCount(), getFailureCount(), getProducts()
+IR --> M : counts and products
+M -> User : summary and product lines
+deactivate M
+
+@enduml

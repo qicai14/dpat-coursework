@@ -1,0 +1,48 @@
+@startuml measurement-procedure
+skinparam monochrome false
+skinparam defaultFontSize 12
+title Measurement Procedure
+
+start
+
+partition "Preparation" {
+  :Create output directories;
+  note right: Zulu 8 javac does not\ncreate the -d target
+  :Compile each solution\nwith Zulu 8;
+}
+
+partition "Equivalence" {
+  :Run both solutions over\nall sample inputs;
+  :Compare captured output;
+  if (Output identical?) then (no)
+    :Resolve the difference;
+    note right: Measurement is invalid\nuntil outputs match
+    stop
+  else (yes)
+  endif
+}
+
+partition "Collection" {
+  :Run ckjm 1.9 with the output\ndirectory on the classpath;
+  note right: The -cp form is required.\njava -jar reports DIT 0 for\nclasses extending project classes
+  :Record raw tool output;
+  :Compute per-class averages\nfor each CK metric;
+}
+
+partition "QMOOD" {
+  :Count DCC from source\nper the stated rule;
+  :Count CAM from method\nparameter lists;
+  :Take CIS from the tool's\nNPM column;
+  :Count DSC as total classes;
+  :Substitute into the\nreusability equation;
+}
+
+partition "Sensitivity" {
+  :Recompute the pattern solution\nwith DSC held at the simple\nsolution's value;
+}
+
+:Report both values\nwith all four components;
+
+stop
+
+@enduml
