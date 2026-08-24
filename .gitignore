@@ -12,3 +12,8 @@
 # Project class files, but keep everything under tools/
 *.class
 !tools/**
+
+
+/steps/
+CONTEXT.md
+RULES.md
